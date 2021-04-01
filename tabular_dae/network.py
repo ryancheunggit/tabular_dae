@@ -110,10 +110,10 @@ class DeepBottleneck(nn.Module):
         return [b, x]
 
     def forward(self, x):
-        return self.forward_pass(x)[~0]
+        return self.forward_pass(x)[1]
 
     def featurize(self, x):
-        return self.forward_pass(x)[1]
+        return self.forward_pass(x)[0]
 
 
 class TransformerEncoder(nn.Module):
