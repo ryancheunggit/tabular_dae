@@ -1,0 +1,13 @@
+.vscode
+
+__pycache__
+.pytest_cache
+
+*.csv
+*.pth
+
+build
+dist
+*.egg
+*.egg-info
+
