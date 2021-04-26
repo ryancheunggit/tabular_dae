@@ -122,7 +122,7 @@ class DataFrameParser(object):
         for column in self.numerical_columns:
             encoders[column] = StandardScaler().fit(dataframe[column])
 
-        self._embeds = [int(min(1, card ** .5)) for card in self._cards]
+        self._embeds = [int(min(600, 1.6 * card ** .5)) for card in self._cards]
         self.encoders = encoders
         return self
 
