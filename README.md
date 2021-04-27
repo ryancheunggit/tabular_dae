@@ -26,7 +26,8 @@ This package implements:
     2. Dataframe parser which converts arbitrary pandas dataframe to numpy arrays.  
     3. DAE network constructor with configurable body blocks.  
     4. DAE training function.  
-    5. Sklearn style `.fit`, `.transform` API.
+    5. Sklearn style `.fit`, `.transform` API.  
+    6. Sklearn style model also supports `save` and `load`. 
 
 ## Installation
 
@@ -68,7 +69,7 @@ latent = dae.transform(df)
   author = {Ren Zhang},
   title = {Denoise AutoEncoder for Tabular Data},
   url = {https://github.com/ryancheunggit/tabular_dae},
-  version = {0.1},
+  version = {0.2},
   year = {2021},
 }
 ```
