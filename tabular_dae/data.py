@@ -6,7 +6,7 @@ from torch.utils.data import Dataset
 __all__ = ['StandardScaler', 'LabelEncoder', 'FreqLabelEncoder', 'DataFrameParser', 'SingleDataset']
 
 
-class StandardScaler(object):
+class StandardScaler:
     def __init__(self):
         self.loc = None
         self.scale = None
@@ -25,7 +25,7 @@ class StandardScaler(object):
         return self.transform(x)
 
 
-class LabelEncoder(object):
+class LabelEncoder:
     def __init__(self):
         self.mapping = dict()
 
@@ -40,7 +40,7 @@ class LabelEncoder(object):
         return np.array(list(map(self.mapping.__getitem__, x)))
 
 
-class FreqLabelEncoder(object):
+class FreqLabelEncoder:
     ''' A composition of label encoding and frequency encoding. Not reversible. '''
     def __init__(self):
         self.freq_counts = None
@@ -63,7 +63,7 @@ class FreqLabelEncoder(object):
         return self.transform(x)
 
 
-class DataFrameParser(object):
+class DataFrameParser:
     """ Transform dataframe to numpy array for modeling. Not a reversible process.
 
         It will reshuffle the columns according to datatype: binary->categorical->numerical
@@ -78,13 +78,14 @@ class DataFrameParser(object):
             + Fill with mean for numerical. # TODO: Need handling of NaN in categorical? If present in training data is fine.
 
     """
-    def __init__(self, max_cardinality=128):
+    def __init__(self, max_cardinality=128, binary_as_categorical=False):
         self.max_cardinality = max_cardinality
         self.binary_columns = list()
         self.categorical_columns = dict() # variable name to mode mapping
         self._cards = list()
         self.numerical_columns = list()
         self.need_freq_encoding = set()
+        self.binary_as_categorical = binary_as_categorical
 
     def fit(self, dataframe):
         self._original_order = dataframe.columns.tolist()
@@ -94,14 +95,15 @@ class DataFrameParser(object):
         for column, datatype in column_to_dtype.items():
             if datatype in ['O', '<U32']:
                 cardinality = dataframe[column].nunique(dropna=False)
-                if cardinality == 2:
+                if cardinality == 2 and not self.binary_as_categorical:
                     self.binary_columns.append(column)
                 else:
                     self.categorical_columns[column] = dataframe[column].mode()
                     if cardinality > self.max_cardinality:
                         self.need_freq_encoding.add(column)
             elif np.issubdtype(datatype, np.integer) and dataframe[column].nunique() == 2:
-                self.binary_columns.append(column)
+                if not self.binary_as_categorical:
+                    self.binary_columns.append(column)
             else:
                 self.numerical_columns.append(column)
 

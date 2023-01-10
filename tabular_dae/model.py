@@ -13,7 +13,7 @@ def load(path_to_model_dump):
     return model
 
 
-class DAE(object):
+class DAE:
     def __init__(
             self,
             body_network='deepstack',
@@ -22,7 +22,8 @@ class DAE(object):
             cats_handling='onehot',
             cards=[],
             embeded_dims=[],
-            device='cpu'
+            device='cpu',
+            dataframe_parser_kwargs=dict()
         ):
         super().__init__()
         self.body_network = body_network
@@ -34,9 +35,10 @@ class DAE(object):
         self.device = device
         self.network = None
         self.parser = None
+        self.dataframe_parser_kwargs=dataframe_parser_kwargs
 
     def _parse_dataframe(self, dataframe):
-        self.parser = parser = DataFrameParser().fit(dataframe)
+        self.parser = parser = DataFrameParser(**self.dataframe_parser_kwargs).fit(dataframe)
         data = parser.transform(dataframe)
         if not self.cards: self.cards = parser.cards
         if not self.embeded_dims: self.embeded_dims = parser.embeds

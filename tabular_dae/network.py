@@ -137,10 +137,10 @@ class TransformerEncoder(nn.Module):
 
 
 class Transformer(nn.Module):
-    ''' DAE Body with transformer encoders. '''
+    ''' DAE Body with transformer encoders for mixed data type inputs. '''
     def __init__(self, in_features, hidden_size=1024, num_subspaces=8, embed_dim=128, num_heads=8, dropout=0, feedforward_dim=512, num_layers=3):
         super().__init__()
-        assert hidden_size == embed_dim * num_subspaces, 'num_subspaces must be a multiple of embed_dim'
+        assert hidden_size == embed_dim * num_subspaces, 'hidden_size must be a multiple of embed_dim'
         self.num_subspaces = num_subspaces
         self.embed_dim = embed_dim
 
@@ -162,6 +162,43 @@ class Transformer(nn.Module):
 
     def forward_pass(self, x):
         x = F.relu(self.excite(x))
+        x = self.divide(x)
+        outputs = []
+        for encoder in self.encoders:
+            x = encoder(x)
+            outputs.append(x)
+        return outputs
+
+    def forward(self, x):
+        return self.combine(self.forward_pass(x)[~0])
+
+    def featurize(self, x):
+        return torch.cat([self.combine(x) for x in self.forward_pass(x)], dim=1)
+
+
+class CatTransformer(nn.Module):
+    ''' DAE Body with transformer encoders for categorial only inputs. '''
+    def __init__(self, in_features, hidden_size=1024, num_subspaces=8, embed_dim=128, num_heads=8, dropout=0, feedforward_dim=512, num_layers=3):
+        super().__init__()
+        assert in_features == hidden_size == embed_dim * num_subspaces, 'num_subspaces must be a multiple of embed_dim'
+        self.num_subspaces = num_subspaces
+        self.embed_dim = embed_dim
+        self.encoders = nn.ModuleList([
+            TransformerEncoder(embed_dim, num_heads, dropout, feedforward_dim)
+            for _ in range(num_layers)
+        ])
+        self._output_shape = hidden_size
+
+    @property
+    def output_shape(self): return self._output_shape
+
+    def divide(self, x):
+        return rearrange(x, 'b (s e) -> s b e', s=self.num_subspaces, e=self.embed_dim)
+
+    def combine(self, x):
+        return rearrange(x, 's b e -> b (s e)')
+
+    def forward_pass(self, x):
         x = self.divide(x)
         outputs = []
         for encoder in self.encoders:
@@ -212,7 +249,8 @@ class MultiTaskHead(nn.Module):
 _ae_body_options = {
     'deepstack': DeapStack,
     'deepbottleneck': DeepBottleneck,
-    'transformer': Transformer
+    'transformer': Transformer,
+    'cattransformer': CatTransformer,
 }
 
 

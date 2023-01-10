@@ -65,7 +65,7 @@ latent = dae.transform(df)
 
 ## Credit  
 ```
-@software{tabular_dae2021nielseniq,
+@software{tabular_dae2021,
   author = {Ren Zhang},
   title = {Denoise AutoEncoder for Tabular Data},
   url = {https://github.com/ryancheunggit/tabular_dae},
